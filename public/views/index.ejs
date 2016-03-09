@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>URL-Change Experiment</title>
+  <meta name="author" content="name">
+  <meta name="description" content="description here">
+  <meta name="keywords" content="keywords,here">
+  <style type="text/css">
+    html {
+      text-align: center;
+      background-color: lightgray;
+    }
+    .videoButton {
+      border-style: outset;
+      border-width: 5px;
+      display: inline-block;
+      color: white;
+      margin: 5px;
+      padding: 0px 10px 0px 10px;
+      border-radius: 0%;
+      transition: 0.5s;
+      text-decoration: none;
+    }
+    .videoButton:hover {
+      border-radius: 50%;
+    }
+    #japan {
+      background-color: darkred;
+    }
+    #spacejam {
+      background-color: blue;
+    }
+    #matrix {
+      background-color: green;
+    }
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+</head>
+
+<body>
+<h2>Hit play on this video, and watch in awe as it continues playing even while the URL changes (mute it if you want):</h2>
+  <iframe width="300" height="250" src="https://www.youtube.com/embed/9bZkp7q19f0" frameborder="0" allowfullscreen></iframe>
+  <h1>Click one of these links to change the URL:</h1>
+  <a id="japan" class="videoButton" href="japan.html"><p>Japan</p></a>
+  <a id="spacejam" class="videoButton" href="spacejam.html"><p>Space Jam</p></a>
+  <a id="matrix" class="videoButton" href="matrix.html"><p>Matrix</p></a>
+
+  <aside id="video">Empty video</aside>
+
+  <span id="passedData" style="display:none;"><%= requestedURL %></span>
+
+  <script type="text/javascript">
+
+    function setupHistoryClicks() {
+      addClicker(document.getElementById("japan"));
+      addClicker(document.getElementById("spacejam"));
+      addClicker(document.getElementById("matrix"));
+    };
+
+    function addClicker(link) {
+      link.addEventListener("click", function(e) {
+        loadInPage(link.href);
+        history.pushState(null, null, link.href);
+        e.preventDefault();
+      }, false);
+    };
+
+    function loadInPage(href) { // loads the dynamic content-- the video or whatever the user clicked on.
+      var req = new XMLHttpRequest();
+      req.open(
+        "GET",
+        "/public/videos/" + href.split('/').pop(), // "japan.html" for example
+        true); // synch = true. Asynch gives a "deprecated" error in Chrome console; fixed by running callback in onreadystatechange below.
+      req.send(null);
+      req.onreadystatechange = function() {
+        document.getElementById("video").innerHTML = req.responseText; // implant the dynamic content
+      }
+    };
+
+    function autorun() {
+
+      setupHistoryClicks();
+
+      var requestedURL = document.getElementById("passedData").innerHTML;
+      // this is the endpoint URL requested by the client. We always redir them to index.ejs, but pass this data in so we can load the requested video
+      loadInPage(requestedURL);
+
+      history.replaceState(null, null, "index.html");
+
+      window.onpopstate = function(e) {
+        if (location.pathname == "/") {
+          loadInPage("index.html");
+          history.replaceState(null, null, "index.html");
+        } else {
+          loadInPage(location.pathname);
+        }
+      }
+    };
+
+
+    if (document.addEventListener) document.addEventListener("DOMContentLoaded", autorun, false);
+    else if (document.attachEvent) document.attachEvent("onreadystatechange", autorun);
+    else window.onload = autorun;
+
+  </script>
+</body>
+</html>
