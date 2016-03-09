@@ -40,7 +40,7 @@
 </head>
 
 <body>
-<h2>Hit play on this video, and watch in awe as it continues playing even while the URL changes (mute it if you want):</h2>
+  <h2>Hit play on this video, and watch in awe as it continues playing even while the URL changes (mute it if you want):</h2>
   <iframe width="300" height="250" src="https://www.youtube.com/embed/9bZkp7q19f0" frameborder="0" allowfullscreen></iframe>
   <h1>Click one of these links to change the URL:</h1>
   <a id="japan" class="videoButton" href="japan.html"><p>Japan</p></a>
@@ -87,7 +87,11 @@
       // this is the endpoint URL requested by the client. We always redir them to index.ejs, but pass this data in so we can load the requested video
       loadInPage(requestedURL);
 
-      history.replaceState(null, null, "index.html");
+      if (location.pathname == "/") {
+        history.replaceState(null, null, "index.html");
+      } else {
+        history.replaceState(null, null, requestedURL);
+      }
 
       window.onpopstate = function(e) {
         if (location.pathname == "/") {
@@ -98,7 +102,6 @@
         }
       }
     };
-
 
     if (document.addEventListener) document.addEventListener("DOMContentLoaded", autorun, false);
     else if (document.attachEvent) document.attachEvent("onreadystatechange", autorun);
